@@ -1,0 +1,53 @@
+/*
+ * Hacking an aroma diffuser
+ * Works together with Processing. 
+ * LDR sensor: 10k resistor
+ * Sanne Metten - December 2022
+*/
+
+#include "Ultrasonic.h"
+
+#define ultrasonicPin 4  // ultrasonic ranger sensor is connected to D4
+#define diffuserPin 2    // the pin the relais is connected to
+int light_sensor = A0;   //the LDR sensor is connected to A0, reads value in range 0-1023
+
+int lightValue = 0;         //take current value coming from the LDR (light) sensor
+int callibrateValue = 250;  //depending on the environment, create a value that works best
+bool diffuserState = 0;
+
+Ultrasonic ultrasonic(ultrasonicPin);  //
+
+void setup() {
+  // make the pin with the optocoupler an output
+  Serial.begin(9600);  // set serial port to 9600 baud.
+  pinMode(diffuserPin, OUTPUT);
+}
+
+void loop() {
+  long RangeInCentimeters;
+  RangeInCentimeters = ultrasonic.MeasureInCentimeters();
+
+
+ // Serial.print("range: ");
+  Serial.println(RangeInCentimeters);
+ // Serial.print(",");
+
+/*
+  Serial.print("LDR value: ");
+  Serial.print(analogRead(light_sensor));
+  Serial.println("");
+*/
+
+  lightValue = analogRead(light_sensor);
+  
+  //Control the diffuser by opening/closing the door (read LDR sensor)
+  if (lightValue > callibrateValue && diffuserState == 0) {
+    digitalWrite(diffuserPin, HIGH);
+    diffuserState = 1;
+    //Serial.println("diffuser is ON");
+  } else if (lightValue <= callibrateValue && diffuserState == 1) {
+    digitalWrite(diffuserPin, LOW);
+    //Serial.println("diffuser is OFF");
+    diffuserState = 0;
+  } 
+}
